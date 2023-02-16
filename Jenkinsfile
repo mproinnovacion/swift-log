@@ -40,7 +40,7 @@ pipeline {
 				}
 
                 always {
-		            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'html', reportFiles: 'output/index.html', reportName: 'Coverage Report'])
+		            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'output', reportFiles: 'index.html', reportName: 'Coverage Report'])
 					
 /*					publishCoverage adapters: [llvmAdapter('coverage.json')], checksName: '', sourceFileResolver: sourceFiles('NEVER_STORE')*/
 /*                    publishCoverage adapters: [lcov(codeCoverage: [path: 'coverage.lcov'])]*/
