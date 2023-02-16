@@ -28,11 +28,11 @@ pipeline {
 
         stage('Coverage') {
             steps {
-                sh "xcrun llvm-cov export -format=\"lcov\" .build/debug/codecov/Sources/*.dSYM/Contents/Resources/llvm/codecov-app -instr-profile .build/debug/codecov/Sources/*.build/codecov/main.profdata > codecov.info"
+                sh "xcrun llvm-cov export -format="lcov" -instr-profile=$(find .build -name default.profdata) $(find .build -name LogPackageTests) > info.lcov"
             }
             post {
                 always {
-                    publishCoverage adapters: [lcov(codeCoverage: [path: 'codecov.info'])]
+                    publishCoverage adapters: [lcov(codeCoverage: [path: 'info.lcov'])]
                 }
             }
         }
