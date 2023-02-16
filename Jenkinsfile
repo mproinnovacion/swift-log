@@ -28,7 +28,7 @@ pipeline {
 
         stage('Coverage') {
             steps {
-                sh "xcrun llvm-cov export -format='cov' -instr-profile=\$(find .build -name default.profdata) \$(find .build -name LogPackageTests) > info.lcov"
+                sh "xcrun llvm-cov export -format='lcov' -instr-profile=\$(find .build -name default.profdata) \$(find .build -name LogPackageTests) > info.lcov"
             }
             post {
                 success {
