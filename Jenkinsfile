@@ -28,7 +28,7 @@ pipeline {
 
         stage('Coverage') {
             steps {
-                sh "xcrun llvm-cov export -format='lcov' -instr-profile=\$(find .build -name default.profdata) \$(find .build -name LogPackageTests) > info.lcov"
+                sh "xcrun llvm-cov export -format='html' -instr-profile=\$(find .build -name default.profdata) \$(find .build -name LogPackageTests) > coverage.html"
             }
             post {
                 success {
@@ -40,7 +40,10 @@ pipeline {
 				}
 
                 always {
-                    publishCoverage adapters: [lcov(codeCoverage: [path: 'info.lcov'])]
+		            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'html', reportFiles: 'coverage.html', reportName: 'Coverage Report'])
+					
+					
+/*                    publishCoverage adapters: [lcov(codeCoverage: [path: 'info.lcov'])]*/
 					cleanWs()
                 }				
             }
