@@ -3,12 +3,12 @@ pipeline {
         label 'ios'
     }
 
-    options {
+   /* options {
         // Accept Xcode license automatically
         xcodeLicense {
             acceptAutomatically()
         }
-    }
+    }*/
 
     stages {
         stage('Prepare') {
