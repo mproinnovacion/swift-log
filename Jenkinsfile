@@ -11,8 +11,8 @@ pipeline {
     }*/
 
     stages {
-        stage('Prepare') {
-        }
+      /*  stage('Prepare') {
+        }*/
 
         stage('Checkout') {
             steps {
