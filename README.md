@@ -19,11 +19,10 @@ Import this library into your spm package:
 .package(url: "https://bitbucket.org/damonfer/swift-log", exact:"0.1.0")
 ```
 
-
 ## Documentation
 
 Documentation for releases and main features of the library are available in the
-"Documentation" folder".
+"Documentation" folder.
 
 ## License
 

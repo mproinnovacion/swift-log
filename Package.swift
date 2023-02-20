@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Log",
+    name: "swift-log",
     products: [
         .library(
             name: "Log",
