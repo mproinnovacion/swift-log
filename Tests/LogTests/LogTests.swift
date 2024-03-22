@@ -221,6 +221,31 @@ final class LogTests: XCTestCase {
 		)
 	}
 	
+	func testMaxLengthString() throws {
+		var messages: [String] = []
+		
+		let log = Log<String> { message in
+			messages.append(message)
+		}.maxLength(1)
+
+		log.log("debug")
+		log.log("info")
+		log.log("warning")
+		log.log("error")
+		log.log("fatal")
+		
+		XCTAssertEqual(
+			messages,
+			[
+				"d",
+				"i",
+				"w",
+				"e",
+				"f"
+			]
+		)
+	}
+	
 	func testMaxLength() throws {
 		var messages: [DefaultMessage<LogTag>] = []
 		
