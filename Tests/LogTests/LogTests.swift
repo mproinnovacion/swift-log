@@ -85,6 +85,31 @@ final class LogTests: XCTestCase {
 		)
 	}
 	
+	func testAddPrefixString() throws {
+		var messages: [String] = []
+		
+		let log = Log<String> { message in
+			messages.append(message)
+		}.adding(prefix: "prefix_")
+		
+		log.log("debug")
+		log.log("info")
+		log.log("warning")
+		log.log("error")
+		log.log("fatal")
+		
+		XCTAssertEqual(
+			messages,
+			[
+				"prefix_debug",
+				"prefix_info",
+				"prefix_warning",
+				"prefix_error",
+				"prefix_fatal"
+			]
+		)
+	}
+	
 	func testAddSuffix() throws {
 		var messages: [DefaultMessage<LogTag>] = []
 		
@@ -106,6 +131,31 @@ final class LogTests: XCTestCase {
 				.init(value: "warning_suffix", level: .warning, tags: [.tests]),
 				.init(value: "error_suffix", level: .error, tags: [.tests]),
 				.init(value: "fatal_suffix", level: .fatal, tags: [.tests])
+			]
+		)
+	}
+	
+	func testAddSuffixString() throws {
+		var messages: [String] = []
+		
+		let log = Log<String> { message in
+			messages.append(message)
+		}.adding(suffix: "_suffix")
+		
+		log.log("debug")
+		log.log("info")
+		log.log("warning")
+		log.log("error")
+		log.log("fatal")
+		
+		XCTAssertEqual(
+			messages,
+			[
+				"debug_suffix",
+				"info_suffix",
+				"warning_suffix",
+				"error_suffix",
+				"fatal_suffix"
 			]
 		)
 	}
