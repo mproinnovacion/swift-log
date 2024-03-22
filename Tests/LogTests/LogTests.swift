@@ -2,131 +2,272 @@ import XCTest
 @testable import Log
 
 final class LogTests: XCTestCase {
-	func testString() throws {
-		XCTAssertEqual(LogLevel.debug.string, "debug")
-		XCTAssertEqual(LogLevel.info.string, "info")
-		XCTAssertEqual(LogLevel.warning.string, "warning")
-		XCTAssertEqual(LogLevel.error.string, "error")
-		XCTAssertEqual(LogLevel.fatal.string, "fatal")
+	enum LogTag: String {
+		case tests
+		case other
 	}
 	
-	func testIgnoring() throws {
-		var logs: [(String, LogLevel)] = []
+	func testString() throws {
+		XCTAssertEqual(LogLevel.debug.formatted, "🔎 debug")
+		XCTAssertEqual(LogLevel.info.formatted, "ℹ️ info")
+		XCTAssertEqual(LogLevel.warning.formatted, "⚠️ warning")
+		XCTAssertEqual(LogLevel.error.formatted, "🚫 error")
+		XCTAssertEqual(LogLevel.fatal.formatted, "💀 fatal")
+	}
+	
+	func testMinLevel() throws {
+		var messages: [DefaultMessage<LogTag>] = []
 		
-		let log = Log { message, level in
-			logs.append(("\(message)", level))
-		}.ignoring(upTo: .warning)
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
+		}.minLevel(.error)
 		
-		log.debug("debug")
-		log.info("info")
-		log.warning("warning")
-		log.error("error")
-		log.fatal("fatal")
-			
-		XCTAssert(logs[0] == ("error", .error))
-		XCTAssert(logs[1] == ("fatal", .fatal))
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "error", level: .error, tags: [.tests]),
+				.init(value: "fatal", level: .fatal, tags: [.tests])
+			]
+		)
+	}
+	
+	func testMaxLevel() throws {
+		var messages: [DefaultMessage<LogTag>] = []
+		
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
+		}.maxLevel(.warning)
+		
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "debug", level: .debug, tags: [.tests]),
+				.init(value: "info", level: .info, tags: [.tests]),
+				.init(value: "warning", level: .warning, tags: [.tests])
+			]
+		)
 	}
 	
 	func testAddPrefix() throws {
-		var logs: [(String, LogLevel)] = []
+		var messages: [DefaultMessage<LogTag>] = []
 		
-		let log = Log { message, level in
-			logs.append(("\(message)", level))
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
 		}.adding(prefix: "prefix_")
 		
-		log.debug("debug")
-		log.info("info")
-		log.warning("warning")
-		log.error("error")
-		log.fatal("fatal")
-			
-		XCTAssert(logs[0] == ("prefix_debug", .debug))
-		XCTAssert(logs[1] == ("prefix_info", .info))
-		XCTAssert(logs[2] == ("prefix_warning", .warning))
-		XCTAssert(logs[3] == ("prefix_error", .error))
-		XCTAssert(logs[4] == ("prefix_fatal", .fatal))
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "prefix_debug", level: .debug, tags: [.tests]),
+				.init(value: "prefix_info", level: .info, tags: [.tests]),
+				.init(value: "prefix_warning", level: .warning, tags: [.tests]),
+				.init(value: "prefix_error", level: .error, tags: [.tests]),
+				.init(value: "prefix_fatal", level: .fatal, tags: [.tests])
+			]
+		)
 	}
 	
 	func testAddSuffix() throws {
-		var logs: [(String, LogLevel)] = []
+		var messages: [DefaultMessage<LogTag>] = []
 		
-		let log = Log { message, level in
-			logs.append(("\(message)", level))
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
 		}.adding(suffix: "_suffix")
 		
-		log.debug("debug")
-		log.info("info")
-		log.warning("warning")
-		log.error("error")
-		log.fatal("fatal")
-			
-		XCTAssert(logs[0] == ("debug_suffix", .debug))
-		XCTAssert(logs[1] == ("info_suffix", .info))
-		XCTAssert(logs[2] == ("warning_suffix", .warning))
-		XCTAssert(logs[3] == ("error_suffix", .error))
-		XCTAssert(logs[4] == ("fatal_suffix", .fatal))
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "debug_suffix", level: .debug, tags: [.tests]),
+				.init(value: "info_suffix", level: .info, tags: [.tests]),
+				.init(value: "warning_suffix", level: .warning, tags: [.tests]),
+				.init(value: "error_suffix", level: .error, tags: [.tests]),
+				.init(value: "fatal_suffix", level: .fatal, tags: [.tests])
+			]
+		)
 	}
 	
-	func testConcat() throws {
-		var logs: [(String, LogLevel)] = []
-		var logs2: [(String, LogLevel)] = []
-
-		let log = Log { message, level in
-			logs.append(("\(message)", level))
-		}.concat(
-			with: Log { message, level in
-				logs2.append(("\(message)", level))
-			}
+	func testCombined() throws {
+		var messages1: [DefaultMessage<LogTag>] = []
+		var messages2: [DefaultMessage<LogTag>] = []
+		
+		let log1 = DefaultLog<LogTag> { message in
+			messages1.append(message)
+		}
+		
+		let log2 = DefaultLog<LogTag> { message in
+			messages2.append(message)
+		}
+		
+		let log = log1.combined(with: log2)
+		
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages1,
+			[
+				.init(value: "debug", level: .debug, tags: [.tests]),
+				.init(value: "info", level: .info, tags: [.tests]),
+				.init(value: "warning", level: .warning, tags: [.tests]),
+				.init(value: "error", level: .error, tags: [.tests]),
+				.init(value: "fatal", level: .fatal, tags: [.tests])
+			]
 		)
 		
-		log.debug("debug")
-		log.info("info")
-		log.warning("warning")
-		log.error("error")
-		log.fatal("fatal")
-			
-		XCTAssert(logs[0] == ("debug", .debug))
-		XCTAssert(logs[1] == ("info", .info))
-		XCTAssert(logs[2] == ("warning", .warning))
-		XCTAssert(logs[3] == ("error", .error))
-		XCTAssert(logs[4] == ("fatal", .fatal))
-		
-		XCTAssert(logs2[0] == ("debug", .debug))
-		XCTAssert(logs2[1] == ("info", .info))
-		XCTAssert(logs2[2] == ("warning", .warning))
-		XCTAssert(logs2[3] == ("error", .error))
-		XCTAssert(logs2[4] == ("fatal", .fatal))
+		XCTAssertEqual(
+			messages2,
+			[
+				.init(value: "debug", level: .debug, tags: [.tests]),
+				.init(value: "info", level: .info, tags: [.tests]),
+				.init(value: "warning", level: .warning, tags: [.tests]),
+				.init(value: "error", level: .error, tags: [.tests]),
+				.init(value: "fatal", level: .fatal, tags: [.tests])
+			]
+		)
 	}
 	
 	func testReduced() throws {
-		var logs: [(String, LogLevel)] = []
-		var logs2: [(String, LogLevel)] = []
-
-		let log = [
-			Log { message, level in
-				logs.append(("\(message)", level))
-			},
-			Log { message, level in
-				logs2.append(("\(message)", level))
-			}
-		].reduced
+		var messages1: [DefaultMessage<LogTag>] = []
+		var messages2: [DefaultMessage<LogTag>] = []
 		
-		log.debug("debug")
-		log.info("info")
-		log.warning("warning")
-		log.error("error")
-		log.fatal("fatal")
-			
-		XCTAssert(logs[0] == ("debug", .debug))
-		XCTAssert(logs[1] == ("info", .info))
-		XCTAssert(logs[2] == ("warning", .warning))
-		XCTAssert(logs[3] == ("error", .error))
-		XCTAssert(logs[4] == ("fatal", .fatal))
+		let log1 = DefaultLog<LogTag> { message in
+			messages1.append(message)
+		}
 		
-		XCTAssert(logs2[0] == ("debug", .debug))
-		XCTAssert(logs2[1] == ("info", .info))
-		XCTAssert(logs2[2] == ("warning", .warning))
-		XCTAssert(logs2[3] == ("error", .error))
-		XCTAssert(logs2[4] == ("fatal", .fatal))
+		let log2 = DefaultLog<LogTag> { message in
+			messages2.append(message)
+		}
+		
+		let log = [log1, log2].reduced()
+		
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages1,
+			[
+				.init(value: "debug", level: .debug, tags: [.tests]),
+				.init(value: "info", level: .info, tags: [.tests]),
+				.init(value: "warning", level: .warning, tags: [.tests]),
+				.init(value: "error", level: .error, tags: [.tests]),
+				.init(value: "fatal", level: .fatal, tags: [.tests])
+			]
+		)
+		
+		XCTAssertEqual(
+			messages2,
+			[
+				.init(value: "debug", level: .debug, tags: [.tests]),
+				.init(value: "info", level: .info, tags: [.tests]),
+				.init(value: "warning", level: .warning, tags: [.tests]),
+				.init(value: "error", level: .error, tags: [.tests]),
+				.init(value: "fatal", level: .fatal, tags: [.tests])
+			]
+		)
+	}
+	
+	func testAddingTags() throws {
+		var messages: [DefaultMessage<LogTag>] = []
+		
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
+		}.addingTags(.other)
+		
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "debug", level: .debug, tags: [.other, .tests]),
+				.init(value: "info", level: .info, tags: [.other, .tests]),
+				.init(value: "warning", level: .warning, tags: [.other, .tests]),
+				.init(value: "error", level: .error, tags: [.other, .tests]),
+				.init(value: "fatal", level: .fatal, tags: [.other, .tests])
+			]
+		)
+	}
+	
+	func testMaxLength() throws {
+		var messages: [DefaultMessage<LogTag>] = []
+		
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
+		}.maxLength(1)
+		
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "d", level: .debug, tags: [.tests]),
+				.init(value: "i", level: .info, tags: [.tests]),
+				.init(value: "w", level: .warning, tags: [.tests]),
+				.init(value: "e", level: .error, tags: [.tests]),
+				.init(value: "f", level: .fatal, tags: [.tests])
+			]
+		)
+	}
+	
+	func testMaxLines() throws {
+		var messages: [DefaultMessage<LogTag>] = []
+		
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
+		}.maxLines(1)
+		
+		log.debug("debug\nsecond", tags: .tests)
+		log.info("info\nsecond", tags: .tests)
+		log.warning("warning\nsecond", tags: .tests)
+		log.error("error\nsecond", tags: .tests)
+		log.fatal("fatal\nsecond", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "debug", level: .debug, tags: [.tests]),
+				.init(value: "info", level: .info, tags: [.tests]),
+				.init(value: "warning", level: .warning, tags: [.tests]),
+				.init(value: "error", level: .error, tags: [.tests]),
+				.init(value: "fatal", level: .fatal, tags: [.tests])
+			]
+		)
 	}
 }
