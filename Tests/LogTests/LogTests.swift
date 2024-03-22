@@ -7,12 +7,39 @@ final class LogTests: XCTestCase {
 		case other
 	}
 	
-	func testString() throws {
+	func testString() {
 		XCTAssertEqual(LogLevel.debug.formatted, "🔎 debug")
 		XCTAssertEqual(LogLevel.info.formatted, "ℹ️ info")
 		XCTAssertEqual(LogLevel.warning.formatted, "⚠️ warning")
 		XCTAssertEqual(LogLevel.error.formatted, "🚫 error")
 		XCTAssertEqual(LogLevel.fatal.formatted, "💀 fatal")
+	}
+	
+	func testFormatted() {
+		XCTAssertEqual(
+			DefaultMessage<LogTag>(value: "debug", level: .debug, tags: [.tests]).formatted,
+			"\(LogLevel.debug.formatted): debug #tests"
+		)
+		
+		XCTAssertEqual(
+			DefaultMessage<LogTag>(value: "info", level: .info, tags: [.tests]).formatted,
+			"\(LogLevel.info.formatted): info #tests"
+		)
+		
+		XCTAssertEqual(
+			DefaultMessage<LogTag>(value: "warning", level: .warning, tags: [.tests]).formatted,
+			"\(LogLevel.warning.formatted): warning #tests"
+		)
+		
+		XCTAssertEqual(
+			DefaultMessage<LogTag>(value: "error", level: .error, tags: [.tests]).formatted,
+			"\(LogLevel.error.formatted): error #tests"
+		)
+		
+		XCTAssertEqual(
+			DefaultMessage<LogTag>(value: "fatal", level: .fatal, tags: [.tests]).formatted,
+			"\(LogLevel.fatal.formatted): fatal #tests"
+		)
 	}
 	
 	func testMinLevel() throws {
