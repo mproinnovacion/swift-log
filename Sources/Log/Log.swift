@@ -290,6 +290,15 @@ extension Log {
 		}
 	}
 	
+	public func disable<Tag>(
+		level: LogLevel
+	) -> Self
+	where Message == DefaultMessage<Tag> {
+		self.ignoreMessages { message in
+			message.level == level
+		}
+	}
+	
 	public func minLevel<Tag>(
 		_ level: LogLevel
 	) -> Self

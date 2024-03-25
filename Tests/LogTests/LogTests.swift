@@ -42,6 +42,30 @@ final class LogTests: XCTestCase {
 		)
 	}
 	
+	func testDisableLevel() throws {
+		var messages: [DefaultMessage<LogTag>] = []
+		
+		let log = DefaultLog<LogTag> { message in
+			messages.append(message)
+		}.disable(level: .error)
+		
+		log.debug("debug", tags: .tests)
+		log.info("info", tags: .tests)
+		log.warning("warning", tags: .tests)
+		log.error("error", tags: .tests)
+		log.fatal("fatal", tags: .tests)
+		
+		XCTAssertEqual(
+			messages,
+			[
+				.init(value: "debug", level: .debug, tags: [.tests]),
+				.init(value: "info", level: .info, tags: [.tests]),
+				.init(value: "warning", level: .warning, tags: [.tests]),
+				.init(value: "fatal", level: .fatal, tags: [.tests])
+			]
+		)
+	}
+	
 	func testMinLevel() throws {
 		var messages: [DefaultMessage<LogTag>] = []
 		
@@ -371,5 +395,30 @@ final class LogTests: XCTestCase {
 				.init(value: "fatal", level: .fatal, tags: [.tests])
 			]
 		)
+	}
+	
+	func testPrint() {
+		let log = Log.print
+		
+		log.log("Printed")
+	}
+	
+	func testConsole() {
+		let log = DefaultLog<LogTag>.console()
+		
+		log.debug("To console")
+	}
+	
+	func testConsoleLogErrors() {
+		let log = DefaultLog<LogTag>.consoleLogErrors()
+		
+		log.debug("Ignored")
+		log.error("To console")
+	}
+	
+	func testLogger() {
+		let log = DefaultLog<LogTag>.logger()
+		
+		log.debug("To system console")
 	}
 }
