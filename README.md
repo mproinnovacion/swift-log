@@ -9,14 +9,17 @@ This library was built with the purpose of defining an interface for logs. The i
 To start using the main features of the library make sure to install it on the main project.
 The library repository can be found in the following link:
 
-https://bitbucket.org/damonfer/swift-log
+```
+https://github.com/mproinnovacion/swift-log.git
+git@github.com:mproinnovacion/swift-log.git
+```
 
 ## Installation
 
 Import this library into your spm package:
 
 ```
-.package(url: "https://bitbucket.org/damonfer/swift-log", exact:"0.1.0")
+.package(url: "https://github.com/mproinnovacion/swift-log.git", exact:"0.1.0")
 ```
 
 
